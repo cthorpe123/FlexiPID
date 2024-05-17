@@ -7,9 +7,11 @@
 // from cetlib version v3_08_00.
 ////////////////////////////////////////////////////////////////////////
 
+// C++ STL includes
 #include <vector>
 #include <string>
 
+// larsoft/uboonecode includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -23,23 +25,17 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/FindMany.h"				
-
 #include "larcoreobj/SummaryData/POTSummary.h"
 #include "lardataobj/RecoBase/Wire.h"
 #include "larsim/EventWeight/Base/MCEventWeight.h"
-
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Track.h"
-#include "lardataobj/RecoBase/Shower.h"
 #include "lardataobj/RecoBase/Hit.h"
-#include "lardataobj/RecoBase/Vertex.h"
-#include "lardataobj/RecoBase/PFParticleMetadata.h"
 #include "lardataobj/AnalysisBase/BackTrackerMatchingData.h"
-#include "lardataobj/AnalysisBase/ParticleID.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 
-//root includes
+// root includes
 #include "TTree.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
@@ -47,7 +43,6 @@
 namespace FlexiPID {
   class LLRPIDTrainer;
 }
-
 
 class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
   public:
@@ -68,10 +63,6 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
     void beginJob() override;
     void endJob() override;
 
-    //check if event contains a reco'd muon, proton and pion from Lambda decay
-    //records their positions in track vector if they exist
-    //void StoreTrackTruth();
-
     void beginSubRun(const art::SubRun& sr);
     void endSubRun(const art::SubRun& sr);
 
@@ -79,7 +70,6 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
 
     // Output trees
     TTree * OutputTree;
-
     std::vector<int> t_TrackTruePDG;
     std::vector<int> t_TrackTrueMomentum;
     std::vector<float> t_TrackLength;
@@ -95,7 +85,6 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
     std::vector<std::vector<float>> t_Pitch_Plane2;
 
     // Fhicl parameters
-
     const std::string f_PFParticleModuleLabel;
     const std::string f_TrackModuleLabel;
     const std::string f_HitModuleLabel;
@@ -104,10 +93,6 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
     const std::string f_HitTruthAssnLabel; 
 
 };
-
-////////////////////////////////////////////////////
-// Setup module labels/read in fhicl settings     //
-////////////////////////////////////////////////////
 
 FlexiPID::LLRPIDTrainer::LLRPIDTrainer(fhicl::ParameterSet const& p)
   : EDAnalyzer{p},
@@ -271,16 +256,11 @@ void FlexiPID::LLRPIDTrainer::beginJob(){
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  //////////////////////////////////////////
-  //             Output Tree	           //
-  //////////////////////////////////////////
-
   OutputTree=tfs->make<TTree>("OutputTree","Truth Info Tree");
 
   OutputTree->Branch("TrackTruePDG",&t_TrackTruePDG);
   OutputTree->Branch("TrackLength",&t_TrackLength);
   OutputTree->Branch("TrackAngleTrueReco",&t_TrackAngleTrueReco);
-
 
   OutputTree->Branch("ResidualRange_Plane0",&t_ResidualRange_Plane0);
   OutputTree->Branch("dEdx_Plane0",&t_dEdx_Plane0);
