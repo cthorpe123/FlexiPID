@@ -1,7 +1,7 @@
 #ifndef _PIDCalc_cxx_
 #define _PIDCalc_cxx_
 
-#include "ubana/FlexiPID/PIDCalc.h"
+#include "ubana/FlexiPID/Alg/PIDCalc.h"
 
 using namespace FlexiPID;
 
@@ -11,7 +11,6 @@ PIDCalc::PIDCalc(const fhicl::ParameterSet& p) :
   PIDReferenceHists(p.get<std::string>("PIDReferenceHists")),
   SupportedPDGs(p.get<std::vector<int>>("SupportedPDGs"))
 {
-  LoadGenericLLRPID();   
 
   TFile* f = TFile::Open(PIDReferenceHists.c_str());
 
@@ -20,7 +19,7 @@ PIDCalc::PIDCalc(const fhicl::ParameterSet& p) :
   for(int i_pl=0;i_pl<kInvalid;i_pl++){
     std::string plane = "Plane" + std::to_string(i_pl);
     for(int pdg : SupportedPDGs){
-      std::string name = std::to_string(pdg) + "_" _ plane;
+      std::string name = std::to_string(pdg) + "_" + plane;
       h_dEdx_Reference.at(i_pl).push_back(static_cast<TH3D*>(f->Get(name.c_str()))); 
     }
   }
@@ -53,11 +52,10 @@ double PIDCalc::GetGenericLLRPID(std::vector<art::Ptr<anab::Calorimetry>> calo_v
 
     auto const &plane = calo->PlaneID().Plane;
 
-    if(plane < 0 || plane >= kInvalid)
-        throw cet::exception("PIDCalc:") << "Plane number " << plane << " not valid" << std::endl;
+    if(plane != kPlane0 && plane != kPlane1 && plane != kPlane2) continue;
 
     TH3D* h_hyp_first = h_dEdx_Reference.at(plane).at(pdg_index_first);
-    TH3D* h_hyp_first = h_dEdx_Reference.at(plane).at(pdg_index_second);
+    TH3D* h_hyp_second = h_dEdx_Reference.at(plane).at(pdg_index_second);
 
     auto const &dedx_values = calo->dEdx();
     auto const &rr = calo->ResidualRange();

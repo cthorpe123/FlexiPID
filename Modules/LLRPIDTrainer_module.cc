@@ -44,12 +44,12 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
-namespace hyperon {
+namespace FlexiPID {
   class LLRPIDTrainer;
 }
 
 
-class hyperon::LLRPIDTrainer : public art::EDAnalyzer {
+class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
   public:
     explicit LLRPIDTrainer(fhicl::ParameterSet const& p);
     // The compiler-generated destructor is fine for non-base
@@ -102,14 +102,14 @@ class hyperon::LLRPIDTrainer : public art::EDAnalyzer {
 // Setup module labels/read in fhicl settings     //
 ////////////////////////////////////////////////////
 
-hyperon::LLRPIDTrainer::LLRPIDTrainer(fhicl::ParameterSet const& p)
+FlexiPID::LLRPIDTrainer::LLRPIDTrainer(fhicl::ParameterSet const& p)
   : EDAnalyzer{p},
   f_Reco(p.get<fhicl::ParameterSet>("Reco"))
 {
 
 }
 
-void hyperon::LLRPIDTrainer::analyze(art::Event const& e)
+void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
 {
 
   //begin by resetting everything
@@ -255,7 +255,7 @@ void hyperon::LLRPIDTrainer::analyze(art::Event const& e)
 
 ///////////////////////////////////////////////////////////////	
 
-void hyperon::LLRPIDTrainer::beginJob(){
+void FlexiPID::LLRPIDTrainer::beginJob(){
 
   art::ServiceHandle<art::TFileService> tfs;
 
@@ -284,14 +284,14 @@ void hyperon::LLRPIDTrainer::beginJob(){
 
 }
 
-void hyperon::LLRPIDTrainer::endJob()
+void FlexiPID::LLRPIDTrainer::endJob()
 {
 }
 
-void hyperon::LLRPIDTrainer::beginSubRun(const art::SubRun& sr)
+void FlexiPID::LLRPIDTrainer::beginSubRun(const art::SubRun& sr)
 {
 }
 
-void hyperon::LLRPIDTrainer::endSubRun(const art::SubRun& sr){}
+void FlexiPID::LLRPIDTrainer::endSubRun(const art::SubRun& sr){}
 
-DEFINE_ART_MODULE(hyperon::LLRPIDTrainer)
+DEFINE_ART_MODULE(FlexiPID::LLRPIDTrainer)

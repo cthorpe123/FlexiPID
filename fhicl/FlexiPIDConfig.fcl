@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+
+FlexiPID: {
+PIDReferenceHists: "${UBANA_DIR}/FlexiPID/Data/dEdx_Reference.root"
+SupportedPDGs: [13,211,2212,3112,3222,321]
+}
+
+END_PROLOG
+
