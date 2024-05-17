@@ -94,7 +94,14 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
     std::vector<std::vector<float>> t_dEdx_Plane2;
     std::vector<std::vector<float>> t_Pitch_Plane2;
 
-    fhicl::ParameterSet f_Reco;
+    // Fhicl parameters
+
+    const std::string f_PFParticleModuleLabel;
+    const std::string f_TrackModuleLabel;
+    const std::string f_HitModuleLabel;
+    const std::string f_CaloModuleLabel;
+    const std::string f_TrackHitAssnLabel;
+    const std::string f_HitTruthAssnLabel; 
 
 };
 
@@ -104,7 +111,12 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
 
 FlexiPID::LLRPIDTrainer::LLRPIDTrainer(fhicl::ParameterSet const& p)
   : EDAnalyzer{p},
-  f_Reco(p.get<fhicl::ParameterSet>("Reco"))
+  f_PFParticleModuleLabel(p.get<std::string>("PFParticleModuleLabel")),
+  f_TrackModuleLabel(p.get<std::string>("TrackModuleLabel")),
+  f_HitModuleLabel(p.get<std::string>("HitModuleLabel")),
+  f_CaloModuleLabel(p.get<std::string>("CaloModuleLabel")),
+  f_TrackHitAssnLabel(p.get<std::string>("TrackHitAssnLabel")),
+  f_HitTruthAssnLabel(p.get<std::string>("HitTruthAssnLabel"))
 {
 
 }
@@ -132,32 +144,32 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
 
   art::Handle<std::vector<recob::PFParticle>> Handle_PFParticle;
   std::vector<art::Ptr<recob::PFParticle>> Vect_PFParticle;
-  if(!e.getByLabel(f_Reco.get<std::string>("PFParticleModuleLabel"),Handle_PFParticle)) 
+  if(!e.getByLabel(f_PFParticleModuleLabel,Handle_PFParticle)) 
     throw cet::exception("LLRPIDTrainer") << "No PFParticle Data Products Found!" << std::endl;
   art::fill_ptr_vector(Vect_PFParticle,Handle_PFParticle);
 
   art::Handle<std::vector<recob::Track>> Handle_Tracks;
   std::vector<art::Ptr<recob::Track>> Vect_Tracks;
-  if(!e.getByLabel(f_Reco.get<std::string>("TrackModuleLabel"),Handle_Tracks))  
+  if(!e.getByLabel(f_TrackModuleLabel,Handle_Tracks))  
     throw cet::exception("LLRPIDTrainer") << "No Track data product!" << std::endl;
   art::fill_ptr_vector(Vect_Tracks,Handle_Tracks);
 
   art::Handle<std::vector<anab::Calorimetry>> Handle_Calorimetry;
   std::vector<art::Ptr<anab::Calorimetry>> Vect_Calorimetry;
-  if(!e.getByLabel(f_Reco.get<std::string>("CaloModuleLabel"),Handle_Calorimetry))  
+  if(!e.getByLabel(f_CaloModuleLabel,Handle_Calorimetry))  
     throw cet::exception("LLRPIDTrainer") << "No Calorimetry data product!" << std::endl;
   art::fill_ptr_vector(Vect_Calorimetry,Handle_Calorimetry);
 
   art::Handle<std::vector<recob::Hit>> Handle_Hit;
   std::vector<art::Ptr<recob::Hit>> Vect_Hit;
-  if(!e.getByLabel(f_Reco.get<std::string>("HitModuleLabel"),Handle_Hit)) 
-    throw cet::exception("SubModuleReco") << "No Hit Data Products Found!" << std::endl;
+  if(!e.getByLabel(f_HitModuleLabel,Handle_Hit)) 
+    throw cet::exception("LLRPIDTrainer") << "No Hit Data Products Found!" << std::endl;
   art::fill_ptr_vector(Vect_Hit,Handle_Hit);
 
-  art::FindManyP<recob::Track>* Assoc_PFParticleTrack = new art::FindManyP<recob::Track>(Vect_PFParticle,e,f_Reco.get<std::string>("TrackModuleLabel"));    
-  art::FindManyP<recob::Hit>* Assoc_TrackHit = new art::FindManyP<recob::Hit>(Vect_Tracks,e,f_Reco.get<std::string>("TrackHitAssnLabel"));
-  art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>* ParticlesPerHit = new art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>(Handle_Hit,e,f_Reco.get<std::string>("HitTruthAssnLabel"));
-  art::FindManyP<anab::Calorimetry>* Assoc_TrackCalo = new art::FindManyP<anab::Calorimetry>(Vect_Tracks,e,f_Reco.get<std::string>("CaloModuleLabel"));
+  art::FindManyP<recob::Track>* Assoc_PFParticleTrack = new art::FindManyP<recob::Track>(Vect_PFParticle,e,f_TrackModuleLabel);    
+  art::FindManyP<recob::Hit>* Assoc_TrackHit = new art::FindManyP<recob::Hit>(Vect_Tracks,e,f_TrackHitAssnLabel);
+  art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>* ParticlesPerHit = new art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>(Handle_Hit,e,f_HitTruthAssnLabel);
+  art::FindManyP<anab::Calorimetry>* Assoc_TrackCalo = new art::FindManyP<anab::Calorimetry>(Vect_Tracks,e,f_CaloModuleLabel);
 
   // Check if there is reco'd neutrino 
 
