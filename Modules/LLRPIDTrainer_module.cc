@@ -109,7 +109,7 @@ FlexiPID::LLRPIDTrainer::LLRPIDTrainer(fhicl::ParameterSet const& p)
 void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
 {
 
-  //begin by resetting everything
+  // Begin by resetting everything
 
   t_TrackTruePDG.clear();
   t_TrackTrueMomentum.clear();
@@ -151,34 +151,32 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
     throw cet::exception("LLRPIDTrainer") << "No Hit Data Products Found!" << std::endl;
   art::fill_ptr_vector(Vect_Hit,Handle_Hit);
 
-  art::FindManyP<recob::Track>* Assoc_PFParticleTrack = new art::FindManyP<recob::Track>(Vect_PFParticle,e,f_TrackModuleLabel);    
-  art::FindManyP<recob::Hit>* Assoc_TrackHit = new art::FindManyP<recob::Hit>(Vect_Tracks,e,f_TrackHitAssnLabel);
-  art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>* ParticlesPerHit = new art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData>(Handle_Hit,e,f_HitTruthAssnLabel);
-  art::FindManyP<anab::Calorimetry>* Assoc_TrackCalo = new art::FindManyP<anab::Calorimetry>(Vect_Tracks,e,f_CaloModuleLabel);
+
+  art::FindManyP<recob::Track> Assoc_PFParticleTrack(Vect_PFParticle,e,f_TrackModuleLabel); 
+  art::FindManyP<recob::Hit> Assoc_TrackHit(Vect_Tracks,e,f_TrackHitAssnLabel);
+  art::FindMany<simb::MCParticle,anab::BackTrackerHitMatchingData> ParticlesPerHit(Handle_Hit,e,f_HitTruthAssnLabel);
+  art::FindManyP<anab::Calorimetry> Assoc_TrackCalo(Vect_Tracks,e,f_CaloModuleLabel); 
 
   // Check if there is reco'd neutrino 
-
   size_t neutrinoID = 99999;
   for(const art::Ptr<recob::PFParticle> &pfp : Vect_PFParticle){
     if(pfp->IsPrimary() && (abs(pfp->PdgCode()) == 14 || abs(pfp->PdgCode()) == 12)){
       neutrinoID = pfp->Self();
     }
   }
-
   if(neutrinoID == 99999) return;
 
   // Loop over PFParticles
-
   for(const art::Ptr<recob::PFParticle> &pfp : Vect_PFParticle){
     if(pfp->Parent() != neutrinoID) continue; 
 
     // Grab the associated track
-    std::vector<art::Ptr<recob::Track>> pfpTracks = Assoc_PFParticleTrack->at(pfp.key());
+    std::vector<art::Ptr<recob::Track>> pfpTracks = Assoc_PFParticleTrack.at(pfp.key());
     if(pfpTracks.size() != 1) continue;
     art::Ptr<recob::Track> track = pfpTracks.at(0);
 
     // Truth match the track
-    std::vector<art::Ptr<recob::Hit>> hits = Assoc_TrackHit->at(track.key());
+    std::vector<art::Ptr<recob::Hit>> hits = Assoc_TrackHit.at(track.key());
     std::unordered_map<int,double>  trkide;
     int maxhits=-1;
     simb::MCParticle const* matchedParticle = NULL;
@@ -188,7 +186,7 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
     for(size_t i_hit=0;i_hit<hits.size();++i_hit){
       particleVec.clear();
       matchVec.clear();
-      ParticlesPerHit->get(hits[i_hit].key(),particleVec,matchVec);
+      ParticlesPerHit.get(hits[i_hit].key(),particleVec,matchVec);
       for(size_t i_particle=0;i_particle<particleVec.size();++i_particle){
         trkide[particleVec[i_particle]->TrackId()]++; 
         if(trkide[particleVec[i_particle]->TrackId()] > maxhits){
@@ -222,7 +220,7 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
     t_Pitch_Plane2.push_back(std::vector<float>()); 
 
     // Get the calorimetry data
-    std::vector<art::Ptr<anab::Calorimetry>> caloFromTrack = Assoc_TrackCalo->at(track.key());
+    std::vector<art::Ptr<anab::Calorimetry>> caloFromTrack = Assoc_TrackCalo.at(track.key());
     for(art::Ptr<anab::Calorimetry> calo : caloFromTrack){
       int plane = calo->PlaneID().Plane;
       if(plane != 0 && plane != 1 && plane != 2) continue;        
@@ -249,8 +247,6 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
   OutputTree->Fill();
 
 }
-
-///////////////////////////////////////////////////////////////	
 
 void FlexiPID::LLRPIDTrainer::beginJob(){
 
