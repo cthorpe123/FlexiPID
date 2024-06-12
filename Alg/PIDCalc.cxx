@@ -9,7 +9,8 @@ using namespace FlexiPID;
 
 PIDCalc::PIDCalc(const fhicl::ParameterSet& p) :
   PIDReferenceHists(p.get<std::string>("PIDReferenceHists")),
-  SupportedPDGs(p.get<std::vector<int>>("SupportedPDGs"))
+  SupportedPDGs(p.get<std::vector<int>>("SupportedPDGs")),
+  Debug(p.get<bool>("Debug",false))
 {
 
   TFile* f = TFile::Open(PIDReferenceHists.c_str());
@@ -26,7 +27,7 @@ PIDCalc::PIDCalc(const fhicl::ParameterSet& p) :
 
   f->Close();
 
-  std::cout << "PIDCalc: Loaded PID reference hists from " << PIDReferenceHists << std::endl;
+  if(Debug) std::cout << "PIDCalc: Loaded PID reference hists from " << PIDReferenceHists << std::endl;
 
 }
 

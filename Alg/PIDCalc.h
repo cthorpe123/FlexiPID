@@ -32,6 +32,7 @@ namespace FlexiPID {
 
       const std::string PIDReferenceHists;
       const std::vector<int> SupportedPDGs;
+      const bool Debug;
 
       std::vector<std::vector<TH3D*>> h_dEdx_Reference;
 
