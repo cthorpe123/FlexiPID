@@ -70,8 +70,10 @@ class FlexiPID::LLRPIDTrainer : public art::EDAnalyzer {
 
     // Output trees
     TTree * OutputTree;
+    int t_run,t_subrun,t_event;
     std::vector<int> t_TrackTruePDG;
-    std::vector<int> t_TrackTrueMomentum;
+    std::vector<double> t_TrackTrueMomentum;
+    std::vector<double> t_TrackTruthPurity;
     std::vector<float> t_TrackLength;
     std::vector<float> t_TrackAngleTrueReco; // Angle between true and reco track directions    
     std::vector<std::vector<float>> t_ResidualRange_Plane0;
@@ -111,8 +113,13 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
 
   // Begin by resetting everything
 
+  t_run = e.run();
+  t_subrun = e.subRun();
+  t_event = e.event();
+
   t_TrackTruePDG.clear();
   t_TrackTrueMomentum.clear();
+  t_TrackTruthPurity.clear();
   t_TrackLength.clear();
   t_TrackAngleTrueReco.clear();
   t_ResidualRange_Plane0.clear();
@@ -199,6 +206,7 @@ void FlexiPID::LLRPIDTrainer::analyze(art::Event const& e)
 
     t_TrackTruePDG.push_back(matchedParticle->PdgCode());
     t_TrackTrueMomentum.push_back(TVector3(matchedParticle->Px(),matchedParticle->Py(),matchedParticle->Pz()).Mag());
+    t_TrackTruthPurity.push_back((double)maxhits/hits.size());
     t_TrackLength.push_back(track->Length());
 
     // Calculate the angle between the true and reconstructed directions - check if particle is reco'd in the
@@ -254,7 +262,13 @@ void FlexiPID::LLRPIDTrainer::beginJob(){
 
   OutputTree=tfs->make<TTree>("OutputTree","Truth Info Tree");
 
+  OutputTree->Branch("run",&t_run);
+  OutputTree->Branch("subrun",&t_subrun);
+  OutputTree->Branch("event",&t_event);
+
   OutputTree->Branch("TrackTruePDG",&t_TrackTruePDG);
+  OutputTree->Branch("TrackTrueMomentum",&t_TrackTrueMomentum);
+  OutputTree->Branch("TrackTruthPurity",&t_TrackTruthPurity);
   OutputTree->Branch("TrackLength",&t_TrackLength);
   OutputTree->Branch("TrackAngleTrueReco",&t_TrackAngleTrueReco);
 
