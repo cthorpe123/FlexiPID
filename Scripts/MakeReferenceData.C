@@ -26,8 +26,9 @@ const std::vector<std::vector<double>> Angle_bins = {
 const std::vector<int> SupportedPDGs = {3222,3112,321,2212,13,211};
 const std::vector<std::string> SupportedPDGs_str = {"SigmaP","SigmaM","Kaon","Proton","Muon","Pion"};
 
-const float TrackAngleTrueRecoCut = 30; // Maximum angle between true and reco directions of tracks to be used to make reference
+const float TrackAngleTrueRecoCut = 20; // Maximum angle between true and reco directions of tracks to be used to make reference
 const float TrackLengthCut = 2; // Minimum length of track to be used to generate reference
+const float TrackTruthPuityCut = 0.9; // Purity of truth match on a track to be included
 
 void MakeReferenceData(){
 
@@ -57,15 +58,17 @@ void MakeReferenceData(){
 
 
   // Load the trees containing the data
-  TFile* f_in = TFile::Open("dEdxTrees.root");
+  TFile* f_in = TFile::Open("/exp/uboone/data/users/cthorpe/FlexiPID/FlexiPIDTrainingData.root");
   TTree* t_in = static_cast<TTree*>(f_in->Get("ana/OutputTree"));
   vector<int>     *TrackTruePDG=0;
+  vector<double>  *TrackTruthPurity=0;
   vector<float>   *TrackLength=0;
   vector<float>   *TrackAngleTrueReco=0;
   vector<vector<vector<float>>*> ResidualRange(3,0);
   vector<vector<vector<float>>*> dEdx(3,0);
   vector<vector<vector<float>>*> Pitch(3,0);
   t_in->SetBranchAddress("TrackTruePDG",&TrackTruePDG);
+  t_in->SetBranchAddress("TrackTruthPurity",&TrackTruthPurity);
   t_in->SetBranchAddress("TrackLength",&TrackLength);
   t_in->SetBranchAddress("TrackAngleTrueReco",&TrackAngleTrueReco);
   t_in->SetBranchAddress("ResidualRange_Plane0",&ResidualRange.at(kPlane0));
@@ -91,7 +94,8 @@ void MakeReferenceData(){
       // Apply quality cuts
       if(TrackLength->at(i_tr) < TrackLengthCut) continue;
       if(TrackAngleTrueReco->at(i_tr) > TrackAngleTrueRecoCut) continue;
-
+      if(TrackTruthPurity->at(i_tr) < TrackTruthPuityCut) continue;
+        
       // Only use tracks in the list of pdgs to make reference for
       int pdg_index = -1;
       for(size_t i_pdg=0;i_pdg<SupportedPDGs.size();i_pdg++) 
